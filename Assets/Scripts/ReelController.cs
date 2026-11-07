@@ -46,22 +46,22 @@ public class ReelController : MonoBehaviour
         if (target == null)
             throw new System.ArgumentNullException(nameof(target));
 
-        for (float t = 0f; t < stopDelay; t += Time.deltaTime)
+        for (float t = 0f; t < stopDelay; t += Time.unscaledDeltaTime)
         {
-            Scroll(spinSpeed * Time.deltaTime, null);
+            Scroll(spinSpeed * Time.unscaledDeltaTime, null);
             yield return null;
         }
 
         Image targetSlot = null;
         while (targetSlot == null)
         {
-            targetSlot = Scroll(spinSpeed * Time.deltaTime, target);
+            targetSlot = Scroll(spinSpeed * Time.unscaledDeltaTime, target);
             yield return null;
         }
 
         float distance = targetSlot.rectTransform.anchoredPosition.y;
         float moved = 0f;
-        for (float t = 0f; t < landDuration; t += Time.deltaTime)
+        for (float t = 0f; t < landDuration; t += Time.unscaledDeltaTime)
         {
             float eased = 1f - Mathf.Pow(1f - t / landDuration, 3f);
             float step = distance * eased - moved;

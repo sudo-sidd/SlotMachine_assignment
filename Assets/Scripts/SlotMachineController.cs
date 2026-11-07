@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -23,16 +24,37 @@ public class SlotMachineController : MonoBehaviour
     [SerializeField] private LeverController lever;
 
     private SpinResolver resolver;
+    private Coroutine[] runningReels;
     private int balance;
     private bool isSpinning;
 
     private void Awake()
     {
+        if (symbols == null || symbols.Length == 0)
+            throw new InvalidOperationException("At least one symbol must be assigned.");
+        if (reels == null || reels.Length != 3)
+            throw new InvalidOperationException("Exactly three reels must be assigned.");
+        if (ui == null)
+            throw new InvalidOperationException("A UIController must be assigned.");
+        if (startingBalance < 0)
+            throw new InvalidOperationException("Starting balance cannot be negative.");
+        if (betOptions == null || betOptions.Length == 0)
+            throw new InvalidOperationException("At least one bet option must be configured.");
+
+        foreach (int bet in betOptions)
+        {
+            if (bet <= 0)
+                throw new InvalidOperationException("Bet options must be positive.");
+        }
+
         resolver = new SpinResolver(symbols);
         balance = startingBalance;
+        runningReels = new Coroutine[reels.Length];
 
         foreach (ReelController reel in reels)
         {
+            if (reel == null)
+                throw new InvalidOperationException("All reel references must be assigned.");
             reel.Initialize(symbols);
         }
     }
@@ -79,14 +101,13 @@ public class SlotMachineController : MonoBehaviour
             yield return lever.Pull(leverPullDuration);
         }
 
-        var running = new Coroutine[reels.Length];
         for (int i = 0; i < reels.Length; i++)
         {
             float delay = firstReelStopDelay + i * reelStopStagger;
-            running[i] = StartCoroutine(reels[i].SpinAndStop(result.Symbols[i], delay));
+            runningReels[i] = StartCoroutine(reels[i].SpinAndStop(result.Symbols[i], delay));
         }
 
-        foreach (Coroutine reel in running)
+        foreach (Coroutine reel in runningReels)
         {
             yield return reel;
         }

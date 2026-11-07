@@ -24,24 +24,33 @@ public class SpinResolver
         this.symbols = symbols;
         rng = seed.HasValue ? new Random(seed.Value) : new Random();
 
+        long weightTotal = 0;
         foreach (SymbolData symbol in symbols)
         {
             if (symbol == null || symbol.Weight <= 0)
                 throw new ArgumentException("Symbols must be non-null and have a positive weight.", nameof(symbols));
 
-            totalWeight += symbol.Weight;
+            weightTotal += symbol.Weight;
         }
+
+        if (weightTotal > int.MaxValue)
+            throw new ArgumentException("The total symbol weight must not exceed Int32.MaxValue.", nameof(symbols));
+
+        totalWeight = (int)weightTotal;
     }
 
     /// <summary>Resolves all three reels before any visual animation begins.</summary>
     public SpinResult Resolve(int bet)
     {
+        if (bet <= 0)
+            throw new ArgumentOutOfRangeException(nameof(bet), "Bet must be positive.");
+
         var landed = new SymbolData[ReelCount];
         for (int i = 0; i < ReelCount; i++)
             landed[i] = PickWeightedSymbol();
 
         bool isWin = landed[0] == landed[1] && landed[1] == landed[2];
-        int payout = isWin ? bet * landed[0].TripleMultiplier : 0;
+        int payout = isWin ? checked(bet * landed[0].TripleMultiplier) : 0;
         return new SpinResult(landed, isWin, payout);
     }
 

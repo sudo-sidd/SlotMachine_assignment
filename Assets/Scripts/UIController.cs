@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
@@ -25,17 +26,26 @@ public class UIController : MonoBehaviour
     public event Action<int> BetSelected;
 
     private Coroutine popupAnimation;
+    private UnityAction[] betButtonListeners;
     private Vector3 popupVisibleScale = Vector3.one;
 
     private void Awake()
     {
+        if (bettingPopup == null || balanceText == null)
+            throw new InvalidOperationException("The betting popup and balance text must be assigned.");
+        if (betButtons == null || betButtonLabels == null ||
+            betButtons.Length != betButtonLabels.Length)
+            throw new InvalidOperationException("Bet button and label counts must match.");
+
         if (bettingPopupTransform != null)
             popupVisibleScale = bettingPopupTransform.localScale;
 
+        betButtonListeners = new UnityAction[betButtons.Length];
         for (int i = 0; i < betButtons.Length; i++)
         {
             int buttonIndex = i;
-            betButtons[i].onClick.AddListener(() => SelectBet(buttonIndex));
+            betButtonListeners[i] = () => SelectBet(buttonIndex);
+            betButtons[i].onClick.AddListener(betButtonListeners[i]);
         }
 
         HideBetPopupImmediate();
@@ -43,9 +53,12 @@ public class UIController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (betButtonListeners == null)
+            return;
+
         for (int i = 0; i < betButtons.Length; i++)
         {
-            betButtons[i].onClick.RemoveAllListeners();
+            betButtons[i].onClick.RemoveListener(betButtonListeners[i]);
         }
     }
 
@@ -110,6 +123,15 @@ public class UIController : MonoBehaviour
 
         bettingPopupCanvasGroup.alpha = startAlpha;
         bettingPopupTransform.localScale = startScale;
+
+        if (popupAnimationDuration <= 0f)
+        {
+            bettingPopupCanvasGroup.alpha = endAlpha;
+            bettingPopupTransform.localScale = endScale;
+            bettingPopup.SetActive(show);
+            popupAnimation = null;
+            yield break;
+        }
 
         while (elapsed < popupAnimationDuration)
         {
