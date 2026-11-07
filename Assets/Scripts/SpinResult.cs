@@ -1,3 +1,8 @@
+/// <summary>
+/// Immutable description of one completed random spin decision.
+/// This object contains the result before the reels animate, so visual timing
+/// cannot affect the outcome.
+/// </summary>
 public class SpinResult
 {
     public SymbolData[] Symbols { get; }

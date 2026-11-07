@@ -45,7 +45,6 @@ public class UIController : MonoBehaviour
     {
         for (int i = 0; i < betButtons.Length; i++)
         {
-            int buttonIndex = i;
             betButtons[i].onClick.RemoveAllListeners();
         }
     }

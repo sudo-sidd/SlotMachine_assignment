@@ -76,12 +76,14 @@ public class ReelController : MonoBehaviour
     private Image Scroll(float distance, SymbolData forced)
     {
         Image placed = null;
+
         float wrapThreshold = -1.5f * cellHeight;
 
         foreach (Image slot in slots)
         {
             RectTransform rt = slot.rectTransform;
             Vector2 pos = rt.anchoredPosition;
+
             pos.y -= distance;
 
             if (pos.y <= wrapThreshold)

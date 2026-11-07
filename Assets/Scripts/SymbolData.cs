@@ -1,5 +1,11 @@
 using UnityEngine;
 
+/// <summary>
+/// Stores the configuration for one slot-machine symbol.
+/// A SymbolData asset is created in the Project window and then assigned to the
+/// machine. Keeping this data in a ScriptableObject separates editable game
+/// values from the code that runs the spin.
+/// </summary>
 [CreateAssetMenu(fileName = "Symbol", menuName = "Slots/Symbol Data")]
 public class SymbolData : ScriptableObject
 {

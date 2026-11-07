@@ -32,7 +32,9 @@ public class SlotMachineController : MonoBehaviour
         balance = startingBalance;
 
         foreach (ReelController reel in reels)
+        {
             reel.Initialize(symbols);
+        }
     }
 
     private void OnEnable()
@@ -73,7 +75,9 @@ public class SlotMachineController : MonoBehaviour
         SpinResult result = resolver.Resolve(bet);
 
         if (lever != null)
+        {
             yield return lever.Pull(leverPullDuration);
+        }
 
         var running = new Coroutine[reels.Length];
         for (int i = 0; i < reels.Length; i++)
@@ -83,10 +87,14 @@ public class SlotMachineController : MonoBehaviour
         }
 
         foreach (Coroutine reel in running)
+        {
             yield return reel;
+        }
 
         if (result.IsWin)
+        {
             balance += result.Payout;
+        }
 
         isSpinning = false;
         RefreshUI();

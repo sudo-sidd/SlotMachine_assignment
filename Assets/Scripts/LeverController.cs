@@ -3,41 +3,45 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Changes the lever sprite for the short pull animation without changing the
-/// lever RectTransform. Both sprites are rendered inside the same fixed frame.
+/// Displays a two-frame lever animation using two independently positioned
+/// Image layers. Both layers stay in the hierarchy; only rendering is toggled.
 /// </summary>
-[RequireComponent(typeof(Image))]
 public class LeverController : MonoBehaviour
 {
-    [SerializeField] private Image leverImage;
-    [SerializeField] private Sprite idleSprite;
-    [SerializeField] private Sprite pulledSprite;
+    [SerializeField] private Image idleImage;
+    [SerializeField] private Image pulledImage;
 
     private void Reset()
     {
-        leverImage = GetComponent<Image>();
+        idleImage = GetComponent<Image>();
     }
 
     private void Awake()
     {
-        if (leverImage == null)
-            leverImage = GetComponent<Image>();
+        if (idleImage == null || pulledImage == null)
+            throw new System.InvalidOperationException("Both lever Image components must be assigned.");
 
-        leverImage.preserveAspect = true;
-        leverImage.sprite = idleSprite;
+        idleImage.preserveAspect = true;
+        pulledImage.preserveAspect = true;
+        SetFrame(false);
     }
 
     /// <summary>
-    /// Shows the pulled sprite briefly, then restores the idle sprite.
-    /// Sprite swapping never calls SetNativeSize, so the RectTransform stays fixed.
+    /// Shows frame two for the requested duration, then returns to frame one.
     /// </summary>
     public IEnumerator Pull(float duration)
     {
-        if (idleSprite == null || pulledSprite == null)
-            throw new System.InvalidOperationException("Both lever sprites must be assigned.");
+        if (idleImage == null || pulledImage == null)
+            throw new System.InvalidOperationException("Both lever Image components must be assigned.");
 
-        leverImage.sprite = pulledSprite;
-        yield return new WaitForSeconds(duration);
-        leverImage.sprite = idleSprite;
+        SetFrame(true);
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, duration));
+        SetFrame(false);
+    }
+
+    private void SetFrame(bool pulled)
+    {
+        idleImage.enabled = !pulled;
+        pulledImage.enabled = pulled;
     }
 }

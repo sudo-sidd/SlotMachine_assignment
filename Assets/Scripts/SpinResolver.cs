@@ -8,7 +8,6 @@ using System.Collections.Generic;
 public class SpinResolver
 {
     private const int ReelCount = 3;
-
     private readonly IReadOnlyList<SymbolData> symbols;
     private readonly Random rng;
     private readonly int totalWeight;
